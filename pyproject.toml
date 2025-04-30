@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "viewforge"
+version = "0.1.0"
+description = "A modular Python UI and workflow engine."
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+authors = [
+  { name = "Israel Dryer", email = "israel.dryer@appforia.net" }
+]
+requires-python = ">=3.7"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/appforia/viewforge"
+Documentation = "https://yourdocs.com/viewforge"
+Source = "https://github.com/appforia/viewforge"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
