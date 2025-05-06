@@ -1,34 +1,32 @@
-# src/viewforge/bridge.py
-
-from viewforge.theme.loader import theme_manager
-from viewforge.state import state
+import json
 
 class JSBridge:
     def __init__(self):
-        self.handlers = {
-            "theme": self.get_theme,
-            "frontend:ready": self.mark_ready
-        }
+        self.handlers = {}
 
-    def receiveMessage(self, message: str):
-        print("[JSBridge] Received:", message)
+    def register_handler(self, name, func):
+        self.handlers[name] = func
 
-        if ":" in message:
-            cmd, arg = message.split(":", 1)
-            if cmd == "theme":
-                return self.set_theme(arg.strip())
+    def receiveMessage(self, payload: str):
+        print("[Bridge] Raw payload:", payload)
 
-        handler = self.handlers.get(message)
-        return handler() if handler else f"Echo: {message}"
+        try:
+            data = json.loads(payload)
+            handler = data.get("handler")
+            args = data.get("args", [])
+        except Exception as e:
+            print("[Bridge] Failed to parse payload:", e)
+            return {"error": True, "message": "Invalid request format"}
 
-    def mark_ready(self):
-        print("[JSBridge] Received frontend:ready")
-        theme_manager.mark_js_ready()
-        return "ack"
+        print(f"[Bridge] Call received: {handler}({args})")
 
-    def get_theme(self):
-        return state.get("theme", "light")
-
-    def set_theme(self, theme):
-        theme_manager.set_theme(theme)
-        return f"Theme set to {theme}"
+        if handler in self.handlers:
+            try:
+                result = self.handlers[handler](*args)
+                # Ensure the result is JSON-serializable
+                return result if result is not None else ""
+            except Exception as e:
+                print("[Bridge] Handler error:", e)
+                return {"error": True, "message": str(e)}
+        else:
+            return {"error": True, "message": f"No handler named '{handler}'"}
