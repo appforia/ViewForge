@@ -1,26 +1,18 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "viewforge"
-version = "0.1.0"
-description = "A modular Python UI and workflow engine."
-readme = "README.md"
-license = { text = "GPL-3.0-or-later" }
-authors = [
-  { name = "Israel Dryer", email = "israel.dryer@appforia.net" }
-]
-requires-python = ">=3.11"
-dependencies = []
+version = "0.1.0.dev0"
+description = "ViewForge is a minimalist Python UI framework for building desktop apps with web technologies and live reload support."
+authors = [{ name = "Israel Dryer", email = "israel.dryer@gmail.com" }]
+dependencies = ["pywebview>=4.0", "watchdog"]
+requires-python = ">=3.8"
 
-[project.urls]
-Homepage = "https://github.com/appforia/viewforge"
-Documentation = "https://yourdocs.com/viewforge"
-Source = "https://github.com/appforia/viewforge"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+viewforge = "viewforge.cli:main"
+viewforge-reload = "viewforge.cli.reload:run_reload"

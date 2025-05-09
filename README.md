@@ -1,88 +1,140 @@
 # ViewForge
 
-**ViewForge** is a modular Python UI and workflow engine designed to simplify the development of reactive, desktop-style applications using modern Python techniques. It supports both dynamic and static UIs, plugin architecture, and clean separation of logic and layout.
-
-> Licensed under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**.
+**ViewForge** is a minimal, component-based UI framework for building desktop apps using Python and modern Web Components. It leverages [pywebview](https://pywebview.flowrl.com/) to render HTML/CSS UI and supports hot-reload for rapid development.
 
 ---
 
-## 🔧 Features
+## ✨ Features
 
-- 🔌 Plugin-friendly component architecture
-- 🌗 Dynamic theme switching (light/dark/custom)
-- 🎨 Declarative and fluent UI composition
-- 🧠 Built-in state management and routing
-- 🌐 WebView or native Tkinter-based rendering
-- 💡 Inspired by frameworks like HeroUI and Zustand
+- 🧱 Component primitives (Text, Stack, Form, SelectBox, etc.)
+- 🔁 Signal-based state management
+- 🔀 Built-in router with route params and query strings
+- ⚡ Hot-reload CLI: `viewforge-reload`
+- 💡 Works with `main.py` by default
+- 🧩 Extendable with custom JS components via bridge
 
 ---
 
 ## 📦 Installation
 
-Install via pip (once published):
-
 ```bash
-pip install viewforge
+pip install -e .
 ```
 
-Or install from source:
-
-```bash
-git clone https://github.com/yourusername/viewforge.git
-cd viewforge
-pip install .
-```
+> Make sure you have `pywebview` and `watchdog` installed in your environment.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-Here’s a minimal usage example:
+Create a `main.py` in your project root:
 
 ```python
-from viewforge import App, Window, Button
+from viewforge.ui import Text, Stack
 
-app = App()
-window = Window(title="ViewForge Demo")
-
-window.add(Button(text="Click Me"))
-app.run(window)
+def build():
+    return [
+        Stack([
+            Text("✅ Hello from ViewForge"),
+            Text("✏️ Edit and save this file to trigger live reload")
+        ])
+    ]
 ```
 
----
-
-## 🧪 Running Tests
-
-Make sure you have `pytest` installed:
+Start the dev server:
 
 ```bash
-pip install pytest
+viewforge-reload
 ```
 
-Then run tests with:
+✔️ It will automatically reload when you edit any `.py` file in the project.
+
+---
+
+## 🔥 Hot Reload CLI
+
+ViewForge ships with a built-in CLI tool:
 
 ```bash
-pytest tests/
+viewforge-reload [optional_module.py]
+```
+
+- If no argument is given, it loads `main.py` from the current directory.
+- Watches all `.py` files in the project folder
+- Reloads the UI on save
+- Handles exceptions and shows them in the app
+
+---
+
+## 🧪 Sample Project Structure
+
+```
+project/
+├── main.py                  # App entry point
+├── viewforge/               # Installed library (editable)
+└── pyproject.toml           # CLI entry point defined here
 ```
 
 ---
 
-## 📄 License
+## 🔧 Defining Your UI
 
-This project is licensed under the terms of the **GNU General Public License v3.0 or later**.  
-See the [full license text here](https://www.gnu.org/licenses/gpl-3.0.txt).
+You create a tree of components using primitives like:
+
+```python
+from viewforge.ui import Text, Stack, TextInput, Button
+
+def build():
+    return [
+        Stack([
+            Text("Login"),
+            TextInput(name="username"),
+            Button("Submit")
+        ])
+    ]
+```
 
 ---
 
-## 🤝 Contributing
+## 🔌 Bridge Support
 
-Pull requests and feature suggestions are welcome!  
-Please [open an issue](https://github.com/yourusername/viewforge/issues) before submitting large changes.
+You can register Python functions as JS handlers via the bridge:
+
+```python
+from viewforge.bridge import register_handler
+
+def say_hello(name):
+    print(f"Hello, {name}!")
+
+register_handler("greet", say_hello)
+```
 
 ---
 
-## 📚 Resources
+## 🧭 Routing
 
-- 📦 PyPI: [pypi.org/project/viewforge](https://pypi.org/project/viewforge)
-- 🗂 Source: [github.com/yourusername/viewforge](https://github.com/yourusername/viewforge)
-- 📖 License: [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.txt)
+```python
+from viewforge.router import create_router
+
+router = create_router()
+router.add_route("/users/<id>", user_view)
+
+app.run([RouterView(router)])
+```
+
+Use `RouteLinkButton("Go", "/users/5")` to navigate.
+
+---
+
+## 🧰 Development Tips
+
+- Use `Signal()` to bind state to inputs
+- Reload happens automatically on `.py` file changes
+- Keep `main.py` as your entry point for smooth CLI support
+- Avoid calling `webview.start()` yourself — use `App.run()` only
+
+---
+
+## 📜 License
+
+MIT © 2025 Israel Dryer

@@ -1,32 +1,41 @@
-import json
-
-class JSBridge:
+class Bridge:
     def __init__(self):
-        self.handlers = {}
+        self._handlers = {}
 
-    def register_handler(self, name, func):
-        self.handlers[name] = func
+    def register(self, name, func):
+        self._handlers[name] = func
+        return name
 
-    def receiveMessage(self, payload: str):
-        print("[Bridge] Raw payload:", payload)
+    def get_handlers(self):
+        return self._handlers
 
-        try:
-            data = json.loads(payload)
-            handler = data.get("handler")
-            args = data.get("args", [])
-        except Exception as e:
-            print("[Bridge] Failed to parse payload:", e)
-            return {"error": True, "message": "Invalid request format"}
+    def handle_event(self, name, *args, **kwargs):
+        if name in self._handlers:
+            return self._handlers[name](*args, **kwargs)
+        raise ValueError(f"No handler registered for event '{name}'")
 
-        print(f"[Bridge] Call received: {handler}({args})")
+    def generate_js_stubs(self):
+        stubs = []
+        for name in self._handlers:
+            stubs.append(f"function {name}(...args) {{ window.pywebview.api.{name}(...args); }}")
+        return "\n".join(stubs)
 
-        if handler in self.handlers:
-            try:
-                result = self.handlers[handler](*args)
-                # Ensure the result is JSON-serializable
-                return result if result is not None else ""
-            except Exception as e:
-                print("[Bridge] Handler error:", e)
-                return {"error": True, "message": str(e)}
-        else:
-            return {"error": True, "message": f"No handler named '{handler}'"}
+
+# Singleton pattern for global access
+_bridge_instance = Bridge()
+
+
+def register_handler(name, func):
+    return _bridge_instance.register(name, func)
+
+
+def get_handlers():
+    return _bridge_instance.get_handlers()
+
+
+def handle_event(name, *args, **kwargs):
+    return _bridge_instance.handle_event(name, *args, **kwargs)
+
+
+def generate_js_stubs():
+    return _bridge_instance.generate_js_stubs()

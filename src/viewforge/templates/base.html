@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>ViewForge</title>
+    <script>window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key === "r") {
+    location.reload();
+  }
+});
+
+window.viewforge = {
+  callPython: (name, args) => {
+    if (window.pywebview && pywebview.api && typeof pywebview.api[name] === "function") {
+      return pywebview.api[name](args);
+    } else {
+      console.warn("No Python API for:", name);
+    }
+  }
+};
+    </script>
+</head>
+<body>
+<div style='padding: 2rem; font-family: sans-serif;'>
+    {{content}}
+</div>
+</body>
+</html>
