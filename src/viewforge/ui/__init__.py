@@ -3,23 +3,6 @@ from viewforge.component import Component
 from viewforge.router import router
 
 
-
-
-
-class SelectBox(Component):
-    def __init__(self, name: str, options: List[str], on_change: Optional[Callable] = None, css=None):
-        self.name = name
-        self.options = options
-        self.on_change = on_change
-        self.handler_name = getattr(on_change, "_handler_name", "") if callable(on_change) else ""
-        super().__init__(css)
-
-    def render(self):
-        handler_attr = f'onchange="{self.handler_name}(this.value)"' if self.handler_name else ""
-        options_html = "\n".join(f'<option value="{opt}">{opt}</option>' for opt in self.options)
-        return f'<select name="{self.name}" {handler_attr}{self.style_attr()}>{options_html}</select>'
-
-
 class Checkbox(Component):
     def __init__(self, label: str, name: str, on_change: Optional[Callable] = None, checked: bool = False, css=None):
         self.label = label

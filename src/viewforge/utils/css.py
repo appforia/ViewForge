@@ -1,22 +1,17 @@
-import re
-import uuid
-import html
-import json
 from typing import Dict, Any
 
-from viewforge.ui.presets import ROUNDED_PRESETS, SHADOW_PRESETS, FONT_SIZE_PRESETS, SPACING_PRESETS
+from viewforge.ui.presets import ROUNDED_PRESETS, SHADOW_PRESETS, FONT_SIZE_PRESETS
+from viewforge.utils.stringcase import snake_to_kebab
 
 PRESET_KEYS = {
     "rounded": ("border_radius", ROUNDED_PRESETS),
     "shadow": ("box_shadow", SHADOW_PRESETS),
     "font_size": ("font_size", FONT_SIZE_PRESETS),
 }
-
 SPACING_KEYS = {
     "padding", "padding_top", "padding_bottom", "padding_left", "padding_right",
     "margin", "margin_top", "margin_bottom", "margin_left", "margin_right",
 }
-
 SHORTHAND_MAP = {
     "padding_x": ["padding_left", "padding_right"],
     "padding_y": ["padding_top", "padding_bottom"],
@@ -25,48 +20,10 @@ SHORTHAND_MAP = {
 }
 
 
-def camel_to_kebab(name: str) -> str:
-    return re.sub(r'(?<!^)(?=[A-Z])', '-', name).lower()
-
-
-def merge_styles(*dicts):
-    merged = {}
-    for d in dicts:
-        if d:
-            merged.update(d)
-    return "; ".join(f"{snake_to_kebab(k)}: {v}" for k, v in merged.items())
-
-
-def escape_html(text: str) -> str:
-    return html.escape(text)
-
-
-def js_func(name: str, *args):
-    arg_str = ", ".join(json.dumps(arg) for arg in args)
-    return f"{name}({arg_str})"
-
-
-def generate_id(prefix="el"):
-    return f"{prefix}-{uuid.uuid4().hex[:8]}"
-
-
-def snake_to_camel(name: str) -> str:
-    parts = name.split('_')
-    return parts[0] + ''.join(p.title() for p in parts[1:])
-
-
-def camel_to_snake(name: str) -> str:
-    return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
-
-
 def coerce_unit(value):
     if isinstance(value, (int, float)):
         return f"{value}px"
     return value
-
-
-def snake_to_kebab(name: str) -> str:
-    return name.replace("_", "-")
 
 
 def resolve_preset(value, presets: dict) -> str:
@@ -121,3 +78,11 @@ def apply_style_props(*styles: Dict[str, Any]) -> Dict[str, Any]:
             result[key] = coerce_unit(val)
 
     return result
+
+
+def merge_styles(*dicts):
+    merged = {}
+    for d in dicts:
+        if d:
+            merged.update(d)
+    return "; ".join(f"{snake_to_kebab(k)}: {v}" for k, v in merged.items())

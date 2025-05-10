@@ -1,4 +1,6 @@
-from typing import TypedDict, Literal, Any, Optional, Mapping, Unpack
+from typing import TypedDict, Literal, Any, Optional, Mapping, Unpack, Union
+
+from viewforge.signal import Signal
 
 
 class StylePropsDict(TypedDict, total=False):
@@ -106,6 +108,7 @@ class StylePropsDict(TypedDict, total=False):
     transition: str
     animation: str
 
+
 StyleProps = Unpack[StylePropsDict]
 
 Css: Optional[Mapping[str, str]] = None
@@ -127,3 +130,4 @@ FontWeight = Literal[
 Tag = Literal["div", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6"]
 
 __all__ = [StyleProps, Align, TextSize, FontWeight, Tag]
+ContentLike = Union[str, Signal]

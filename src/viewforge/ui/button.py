@@ -1,20 +1,27 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
+from viewforge.signal import Signal
 from viewforge.component import Component
 from viewforge.libtypes import Css, StyleProps
 
+
 class Button(Component):
     def __init__(
-        self,
-        label: str,
-        on_click: Optional[Callable] = None,
-        *,
-        css: Css = None,
-        **props: StyleProps
+            self,
+            label: Union[str, Signal],
+            on_click: Optional[Callable] = None,
+            *,
+            css: Css = None,
+            **props: StyleProps
     ):
         self.label = label
-        self.onclick_name = getattr(on_click, "_handler_name", "") if callable(on_click) else ""
-        super().__init__(default_style={}, css=css, **props)
+        if callable(on_click):
+            props["on_click"] = on_click  # generic event handler
+
+        if isinstance(label, Signal):
+            label.subscribe(self.update)
+
+        super().__init__(css=css, **props)
 
     def render(self) -> str:
-        onclick_attr = f' onclick="vf(\'{self.onclick_name}\')"' if self.onclick_name else ""
-        return f'<button id="{self._id}"{onclick_attr}{self.style_attr()}>{self.label}</button>'
+        content = self.label() if isinstance(self.label, Signal) else self.label
+        return f'<button id="{self.id}"{self.event_attr()}{self.style_attr()}>{content}</button>'

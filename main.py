@@ -3,24 +3,39 @@ from viewforge.signal import Signal
 from viewforge.registry import handler
 from viewforge.ui.text import Text
 from viewforge.ui.stack import Stack
-from viewforge.ui.input import TextInput
+from viewforge.ui.textbox import TextBox
+from viewforge.ui.selectbox import SelectBox
 
-
-# Create a signal to hold the user's name
+# Reactive signals
 name = Signal("")
+color = Signal("Red")
+
 
 @handler()
 def name_changed(value: str):
-    print("Input changed:", value)
     name.set(value)
+
+
+@handler()
+def color_changed(value: str):
+    color.set(value)
 
 
 def build():
     return [
         Stack([
             Text("What's your name?", tag="h2"),
-            TextInput(name="firstName", bind=name, on_input=name_changed),
-            Text(name, size="md", color="gray")
+            TextBox(name="firstName", value=name(), on_input=name_changed),
+            Text(name, size="md", color="gray"),
+
+            Text("Choose a color:", tag="h2", css={"margin_top": "2rem"}),
+            SelectBox(
+                name="favoriteColor",
+                options=["Red", "Green", "Blue"],
+                selected=color,
+                on_change=color_changed
+            ),
+            Text(color, size="md", color=color())
         ], css={"gap": "1rem", "padding": "2rem"})
     ]
 
