@@ -8,7 +8,7 @@ import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from viewforge.app import App
-from viewforge.ui import Text
+from viewforge.ui.text import Text
 
 def load_app_entry(source):
     if source.endswith(".py"):
@@ -30,11 +30,11 @@ class ReloadHandler(FileSystemEventHandler):
                 module = load_app_entry(self.source)
                 app = App.current()
                 if app:
-                    print("✅", "UI reloaded.")
+                    print("✅  UI reloaded.")
                     app._components = module.build()
                     app.reload()
             except Exception as e:
-                print("❌", "Reload error:", e)
+                print("❌  Reload error:", e)
                 traceback.print_exc()
                 app = App.current()
                 if app:
@@ -47,10 +47,10 @@ def run_reload():
     else:
         default_main = Path("main.py")
         if default_main.exists():
-            print("📂 ", "No module specified — using 'main.py' in current directory")
+            print("📂  No module specified — using 'main.py' in current directory")
             source = str(default_main)
         else:
-            print("❌", "No module specified and no 'main.py' found")
+            print("❌  No module specified and no 'main.py' found")
             sys.exit(1)
 
     try:
@@ -75,4 +75,4 @@ def run_reload():
         observer.join()
 
     threading.Thread(target=start_watcher, daemon=True).start()
-    app.run(components)
+    app.run(components, True)

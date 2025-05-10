@@ -1,39 +1,43 @@
-from viewforge.bridge import generate_js_stubs
 import webview
 from viewforge.render import render_html
-
-def inject_js(html: str) -> str:
-    stub_script = f"<script>\n{generate_js_stubs()}\n</script>"
-    return html.replace("</body>", stub_script + "\n</body>")
+from viewforge.registry import handler_registry
 
 class App:
     _instance = None
 
-    def __init__(self, router=None):
+    def __init__(self, router=None, title: str = "ViewForge App"):
         self.window = None
-        self._components = []
+        self.title = title
         self.router = router
+        self._components = None
         App._instance = self
-        self.api = AppAPI()
+        self.api = API()
 
-    def run(self, components=None):
+    def run(self, components=None, debug=False):
         if components:
-            self._components = components
-            html = render_html(components)
+            if callable(components):
+                print("[App] Building components...")
+                self._components = components()
+            else:
+                self._components = components
+            html = render_html(self._components, title=self.title)
+
         elif self.router:
-            html = inject_js(render_html([RouterView(self.router)]))
+            html = render_html([RouterView(self.router)], title=self.title)
         else:
             html = "<h1>No components or router provided</h1>"
 
-        self.window = webview.create_window("ViewForge App", html=html, js_api=self.api)
-        webview.start(http_server=True)
+        print("[App] Creating window")
+        print("Registered handlers:", list(handler_registry.get().keys()))
+        self.window = webview.create_window(self.title, html=html, js_api=self.api)
+        webview.start(debug=debug, http_server=True)
 
     def reload(self):
         if self.window:
             if self.router:
-                html = inject_js(render_html([RouterView(self.router)]))
+                html = render_html([RouterView(self.router)], title=self.title)
             else:
-                html = inject_js(render_html(self._components))
+                html = render_html(self._components, title=self.title)
             script = f"document.documentElement.innerHTML = `{html}`"
             self.window.evaluate_js(script)
 
@@ -41,15 +45,15 @@ class App:
     def current(cls):
         return cls._instance
 
-class AppAPI:
-    def ping(self):
-        print("JS → Python: ping received")
 
-    def reload(self):
-        print("JS → Python: reload requested")
-        app = App.current()
-        if app:
-            app.reload()
+class API:
+    def handle_event(self, name, *args):
+        print(f"[API] Handling event: {name} with args: {args}")
+        handler = handler_registry.get().get(name)
+        if handler:
+            return handler(*args)
+        raise ValueError(f"No handler named '{name}'")
+
 
 class RouterView:
     def __init__(self, router):

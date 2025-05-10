@@ -1,140 +1,106 @@
 # ViewForge
 
-**ViewForge** is a minimal, component-based UI framework for building desktop apps using Python and modern Web Components. It leverages [pywebview](https://pywebview.flowrl.com/) to render HTML/CSS UI and supports hot-reload for rapid development.
+**ViewForge** is a modern Python desktop UI framework that renders HTML and web components inside a [pywebview](https://github.com/r0x0r/pywebview) window.
+
+It supports component-based rendering, declarative event registration, and a clean event bridge using a single JavaScript function and dynamic Python handler resolution.
 
 ---
 
 ## ✨ Features
 
-- 🧱 Component primitives (Text, Stack, Form, SelectBox, etc.)
-- 🔁 Signal-based state management
-- 🔀 Built-in router with route params and query strings
-- ⚡ Hot-reload CLI: `viewforge-reload`
-- 💡 Works with `main.py` by default
-- 🧩 Extendable with custom JS components via bridge
+* ✅ Component-based architecture (Text, Button, Box, Stack, etc.)
+* 🔗 Declarative event binding via `@handler()`
+* 🔁 Single JS function dispatcher: `vf('event_name', ...args)`
+* 🔐 Central Python event router: `handle_event(name, *args)`
+* ⚡ Hot reload with Ctrl+R
+* 🧩 Flexible styling via CSS-style dicts
+* 🧠 Easy to extend with routing, signals, forms
 
 ---
 
-## 📦 Installation
+## 🔧 Project Structure
 
-```bash
-pip install -e .
+```
+viewforge/
+├── app.py            # App lifecycle + pywebview integration
+├── render.py         # HTML template and vf() injection
+├── registry.py       # @handler() decorator + handler storage
+├── component.py      # Base class for UI components
+├── ui/               # Button, Text, Box, Stack, etc.
+└── main.py           # Your app's entry point
 ```
 
-> Make sure you have `pywebview` and `watchdog` installed in your environment.
-
 ---
 
-## 🚀 Quick Start
+## 🚀 Usage
 
-Create a `main.py` in your project root:
+### 1. Define a handler
 
 ```python
-from viewforge.ui import Text, Stack
+from viewforge.registry import handler
 
-def build():
-    return [
-        Stack([
-            Text("✅ Hello from ViewForge"),
-            Text("✏️ Edit and save this file to trigger live reload")
-        ])
-    ]
+@handler()
+def handle_click():
+    print("Button clicked!")
 ```
 
-Start the dev server:
-
-```bash
-viewforge-reload
-```
-
-✔️ It will automatically reload when you edit any `.py` file in the project.
-
----
-
-## 🔥 Hot Reload CLI
-
-ViewForge ships with a built-in CLI tool:
-
-```bash
-viewforge-reload [optional_module.py]
-```
-
-- If no argument is given, it loads `main.py` from the current directory.
-- Watches all `.py` files in the project folder
-- Reloads the UI on save
-- Handles exceptions and shows them in the app
-
----
-
-## 🧪 Sample Project Structure
-
-```
-project/
-├── main.py                  # App entry point
-├── viewforge/               # Installed library (editable)
-└── pyproject.toml           # CLI entry point defined here
-```
-
----
-
-## 🔧 Defining Your UI
-
-You create a tree of components using primitives like:
+### 2. Use the handler in a Button
 
 ```python
-from viewforge.ui import Text, Stack, TextInput, Button
-
-def build():
-    return [
-        Stack([
-            Text("Login"),
-            TextInput(name="username"),
-            Button("Submit")
-        ])
-    ]
+Button("Click Me", on_click=handle_click)
 ```
 
----
-
-## 🔌 Bridge Support
-
-You can register Python functions as JS handlers via the bridge:
+### 3. Launch your app
 
 ```python
-from viewforge.bridge import register_handler
-
-def say_hello(name):
-    print(f"Hello, {name}!")
-
-register_handler("greet", say_hello)
+from viewforge.app import App
+App().run(build)
 ```
 
 ---
 
-## 🧭 Routing
+## 🧠 How Events Work
 
-```python
-from viewforge.router import create_router
+* You define handlers with `@handler()` → gives each one a name like `on_handle_click`
+* Buttons generate HTML like:
 
-router = create_router()
-router.add_route("/users/<id>", user_view)
+  ```html
+  <button onclick="vf('on_handle_click')">Click</button>
+  ```
+* The global JS `vf(...)` function calls Python via `pywebview.api.handle_event(...)`
+* The `API` class routes it:
 
-app.run([RouterView(router)])
-```
-
-Use `RouteLinkButton("Go", "/users/5")` to navigate.
-
----
-
-## 🧰 Development Tips
-
-- Use `Signal()` to bind state to inputs
-- Reload happens automatically on `.py` file changes
-- Keep `main.py` as your entry point for smooth CLI support
-- Avoid calling `webview.start()` yourself — use `App.run()` only
+  ```python
+  def handle_event(self, name, *args):
+      return handler_registry.get()[name](*args)
+  ```
 
 ---
 
-## 📜 License
+## 🧪 Debug Tips
 
-MIT © 2025 Israel Dryer
+* Click too early? `vf(...)` retries until `handle_event` is ready
+* Need to run JS *after* bridge is ready?
+
+  ```js
+  window.viewforge.ready(() => {
+    vf("on_startup")
+  })
+  ```
+
+---
+
+## 📦 Coming Soon
+
+* ✅ Form components with `on_submit`
+* 🔁 Two-way binding via signals
+* 🌐 Client-side routing
+* 🎨 Theming and layout engine
+
+---
+
+## 🧼 Philosophy
+
+**ViewForge** keeps your Python UI declarative, debuggable, and close to the metal — no build tools, no TypeScript, just dynamic HTML rendered with native Python logic.
+
+> Build UIs in Python. Render like the web.

@@ -1,37 +1,54 @@
-from viewforge.bridge import generate_js_stubs
-
-TEMPLATE_HEAD = """<!DOCTYPE html>
+HTML_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>ViewForge</title>
+  <meta charset="utf-8"/>
+  <title>{title}</title>
   <script>
-{js_stubs}
-
-window.addEventListener('keydown', (e) => {{
-  if (e.ctrlKey && e.key === 'r') {{
-    console.log('Hot reload triggered');
-    if (window.pywebview) {{
-      window.pywebview.api.reload();
-    }} else {{
-      location.reload();
-    }}
+window.addEventListener("keydown", (e) => {{
+  if (e.ctrlKey && e.key === "r") {{
+    location.reload();
   }}
 }});
+
+function vf(name, ...args) {{
+  if (window.pywebview?.api?.handle_event) {{
+    window.pywebview.api.handle_event(name, ...args);
+  }} else {{
+    console.warn("[vf] Handler not ready for:", name);
+    setTimeout(() => vf(name, ...args), 100);
+  }}
+}}
+
+window.viewforge = {{
+  readyQueue: [],
+  ready(fn) {{
+    if (window.pywebview?.api?.handle_event) {{
+      fn();
+    }} else {{
+      this.readyQueue.push(fn);
+      const check = () => {{
+        if (window.pywebview?.api?.handle_event) {{
+          while (this.readyQueue.length > 0) {{
+            this.readyQueue.shift()();
+          }}
+        }} else {{
+          setTimeout(check, 50);
+        }}
+      }};
+      check();
+    }}
+  }}
+}};
   </script>
 </head>
 <body>
-"""
-
-TEMPLATE_BODY = """<div style='padding: 2rem; font-family: sans-serif;'>
-  {content}
-</div>
+  <div style="padding: 2rem; font-family: sans-serif;">
+    {content}
+  </div>
 </body>
-</html>
-"""
+</html>"""
 
 
-def render_html(components):
+def render_html(components, title="ViewForge"):
     rendered = "\n".join(c.render() for c in components)
-    js_stubs = generate_js_stubs()
-    return TEMPLATE_HEAD.format(js_stubs=js_stubs) + TEMPLATE_BODY.format(content=rendered)
+    return HTML_TEMPLATE.format(title=title, content=rendered)
