@@ -1,5 +1,5 @@
 import uuid
-from typing import Any
+from typing import Any, Optional
 from viewforge.app import App
 from viewforge.libtypes import Css
 from viewforge.signal import Signal
@@ -49,11 +49,11 @@ class Component:
         css_str = "; ".join(f"{k.replace('_', '-')}: {v}" for k, v in style.items())
         return f' style="{css_str}"'
 
-    def event_attr(self) -> str:
+    def event_attr(self, element_type: Optional[str] = None) -> str:
         if not self._event_handlers:
             return ""
         return " " + " ".join(
-            f'on{event}="vf(\'{handler}\', {js_event_expression(event)})"'
+            f'on{event}="vf(\'{handler}\', {js_event_expression(event, element_type)})"'
             for event, handler in self._event_handlers.items()
         )
 

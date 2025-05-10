@@ -1,6 +1,7 @@
 from viewforge.app import App
 from viewforge.signal import Signal
 from viewforge.registry import handler
+from viewforge.ui.checkbox import Checkbox
 from viewforge.ui.text import Text
 from viewforge.ui.stack import Stack
 from viewforge.ui.textbox import TextBox
@@ -9,7 +10,11 @@ from viewforge.ui.selectbox import SelectBox
 # Reactive signals
 name = Signal("")
 color = Signal("Red")
+accept_terms = Signal(False)
 
+@handler()
+def toggle_accept(value: bool):
+    accept_terms.set(value)
 
 @handler()
 def name_changed(value: str):
@@ -35,7 +40,12 @@ def build():
                 selected=color,
                 on_change=color_changed
             ),
-            Text(color, size="md", color=color())
+            Text(color, size="md", color=color()),
+            Checkbox(
+                label="I agree to the terms",
+                checked=accept_terms,
+                on_change=toggle_accept
+            )
         ], css={"gap": "1rem", "padding": "2rem"})
     ]
 
