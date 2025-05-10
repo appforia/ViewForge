@@ -17,4 +17,4 @@ class Button(Component):
 
     def render(self) -> str:
         onclick_attr = f' onclick="vf(\'{self.onclick_name}\')"' if self.onclick_name else ""
-        return f'<button{onclick_attr}{self.style_attr()}>{self.label}</button>'
+        return f'<button id="{self._id}"{onclick_attr}{self.style_attr()}>{self.label}</button>'

@@ -14,6 +14,6 @@ class Box(Component):
         self.children = children or []
         super().__init__(default_style={}, css=css, **props)
 
-    def render(self) -> str:
-        inner = "\n".join(child.render() for child in self.children)
-        return f'<div{self.style_attr()}>{inner}</div>'
+    def render(self):
+        child_html = "\n".join(child.render() for child in self.children)
+        return f'<div id="{self._id}"{self.style_attr()}>{child_html}</div>'

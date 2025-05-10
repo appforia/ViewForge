@@ -20,5 +20,5 @@ class Stack(Component):
         super().__init__(default_style=default_style, css=css, **props)
 
     def render(self):
-        inner = "\n".join(c.render() for c in self.children)
-        return f'<div{self.style_attr()}>{inner}</div>'
+        child_html = "\n".join(child.render() for child in self.children)
+        return f'<div id="{self._id}"{self.style_attr()}>{child_html}</div>'

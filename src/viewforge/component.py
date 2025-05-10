@@ -1,23 +1,25 @@
-from viewforge.utils import apply_style_props, merge_styles
+import uuid
+from viewforge.app import App
 
 
 class Component:
-    def __init__(self, default_style=None, css=None, **props):
-        """
-        default_style → the lowest precedence
-        css → user override dict
-        props → the highest precedence (shorthand props like padding=16)
-        """
-        final_style = apply_style_props(
-            default_style or {},
-            css or {},
-            props
-        )
-        self.css_dict = final_style
-        self.css = merge_styles(final_style)
+    def __init__(self, css=None, **style):
+        self._id = f"vf-{uuid.uuid4().hex[:8]}"
+        self.css = css or {}
+        self.style = style
+        self._rendered_once = False  # Optional: track lifecycle
 
-    def style_attr(self) -> str:
-        return f' style="{self.css}"' if self.css else ""
+    def style_attr(self):
+        if not self.style:
+            return ""
+        styles = "; ".join(f"{k.replace('_', '-')}: {v}" for k, v in self.style.items())
+        return f' style="{styles}"'
 
     def render(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError("Subclasses must implement render()")
+
+    def update(self, _=None):
+        html = self.render().replace("`", "\\`")  # escape backticks
+        script = f'document.getElementById("{self._id}").outerHTML = `{html}`;'
+        print(f"[ViewForge] Updating #{self._id}")
+        App.current().window.evaluate_js(script)

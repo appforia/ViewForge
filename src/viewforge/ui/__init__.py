@@ -1,22 +1,9 @@
 from typing import List, Optional, Callable
 from viewforge.component import Component
-from viewforge.signal import Signal
 from viewforge.router import router
 
-class TextInput(Component):
-    def __init__(self, name: Optional[str] = None, bind: Optional[Signal] = None, on_input: Optional[Callable] = None,
-                 css=None):
-        self.name = name
-        self.bind = bind
-        self.on_input = on_input
-        self.handler_name = getattr(on_input, "_handler_name", "") if callable(on_input) else ""
-        super().__init__(css)
 
-    def render(self):
-        handler_attr = f'oninput="{self.handler_name}(this.value)"' if self.handler_name else ""
-        name_attr = f'name="{self.name}"' if self.name else ""
-        value_attr = f'value="{self.bind()}"' if self.bind else ""
-        return f'<input type="text" {name_attr} {value_attr} {handler_attr}{self.style_attr()} />'
+
 
 
 class SelectBox(Component):

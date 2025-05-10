@@ -15,9 +15,10 @@ class HandlerRegistry:
 handler_registry = HandlerRegistry()
 
 def handler(name: str = None):
-    def decorator(func: Callable):
-        func_name = name or f"on_{func.__name__}"
-        func._handler_name = func_name
-        handler_registry.register(func_name, func)
-        return func
+    def decorator(fn):
+        handler_name = name or fn.__name__
+        fn._handler_name = handler_name
+        handler_registry.get()[handler_name] = fn
+        print(f"[handler] Registered: {handler_name}")
+        return fn
     return decorator
