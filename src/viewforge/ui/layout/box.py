@@ -1,6 +1,6 @@
 from typing import List, Optional
-from viewforge.component import Component
-from viewforge.libtypes import StyleProps, Css
+from viewforge.core.component import Component
+from viewforge.core.libtypes import StyleProps, Css
 
 
 class Box(Component):

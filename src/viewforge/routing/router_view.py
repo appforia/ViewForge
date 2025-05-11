@@ -1,5 +1,5 @@
-from viewforge.component import Component
-from viewforge.router import router
+from viewforge.core.component import Component
+from viewforge.routing.router import router
 
 
 class RouterView(Component):

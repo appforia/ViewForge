@@ -1,7 +1,7 @@
 from typing import Optional, Union, Callable
-from viewforge.signal import Signal
-from viewforge.component import Component
-from viewforge.libtypes import Css
+from viewforge.state.signal import Signal
+from viewforge.core.component import Component
+from viewforge.core.libtypes import Css
 from viewforge.utils.html import escape_html
 
 class Checkbox(Component):

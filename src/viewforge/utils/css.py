@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from viewforge.ui.presets import ROUNDED_PRESETS, SHADOW_PRESETS, FONT_SIZE_PRESETS
+from viewforge.ui.layout.presets import ROUNDED_PRESETS, SHADOW_PRESETS, FONT_SIZE_PRESETS
 from viewforge.utils.stringcase import snake_to_kebab
 
 PRESET_KEYS = {

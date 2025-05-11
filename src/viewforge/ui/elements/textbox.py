@@ -1,8 +1,8 @@
 from typing import Optional, Callable
-from viewforge.signal import Signal
-from viewforge.component import Component
-from viewforge.libtypes import Css
-from viewforge.app import App
+from viewforge.state.signal import Signal
+from viewforge.core.component import Component
+from viewforge.core.libtypes import Css
+from viewforge.core.app import App
 
 class TextBox(Component):
     def __init__(

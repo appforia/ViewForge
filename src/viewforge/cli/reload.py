@@ -7,8 +7,8 @@ from pathlib import Path
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from viewforge.app import App
-from viewforge.ui.text import Text
+from viewforge.core.app import App
+from viewforge.ui.elements.text import Text
 
 def load_app_entry(source):
     if source.endswith(".py"):

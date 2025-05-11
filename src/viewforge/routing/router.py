@@ -81,7 +81,7 @@ class Router:
 
 
 def _not_found():
-    from viewforge.ui.text import Text
+    from viewforge.ui.elements.text import Text
     return Text("404 - Page not found")
 
 
@@ -109,7 +109,7 @@ class RouterSignal:
         else:
             full_path = name_or_path
         self._router.navigate(full_path)
-        from viewforge.app import App
+        from viewforge.core.app import App
         app = App.current()
         if app:
             app.reload()

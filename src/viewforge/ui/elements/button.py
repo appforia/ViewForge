@@ -1,7 +1,7 @@
 from typing import Callable, Optional, Union
-from viewforge.signal import Signal
-from viewforge.component import Component
-from viewforge.libtypes import Css, StyleProps
+from viewforge.state.signal import Signal
+from viewforge.core.component import Component
+from viewforge.core.libtypes import Css, StyleProps
 
 
 class Button(Component):

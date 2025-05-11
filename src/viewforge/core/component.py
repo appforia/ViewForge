@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, Optional
-from viewforge.libtypes import Css
-from viewforge.signal import Signal
+from viewforge.core.libtypes import Css
+from viewforge.state.signal import Signal
 from viewforge.utils.event_binding import js_event_expression
 
 
@@ -69,7 +69,7 @@ class Component:
         raise NotImplementedError("Subclasses must implement render()")
 
     def update(self, _=None):
-        from viewforge.app import App  # ✅ lazy import to avoid circular reference
+        from viewforge.core.app import App  # ✅ lazy import to avoid circular reference
         html = self.render().replace("`", "\\`")
         js = f'document.getElementById("{self.id}").outerHTML = `{html}`'
         App.current().window.evaluate_js(js)

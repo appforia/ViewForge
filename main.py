@@ -1,10 +1,8 @@
-from viewforge.app import App
-from viewforge.ui.stack import Stack
-from viewforge.ui.text import Text
-from viewforge.ui.route_link_button import RouteLinkButton
-from viewforge.ui.router_view import RouterView
-from viewforge.router import route
-
+from viewforge.core import App
+from viewforge.ui.elements import Text
+from viewforge.ui.layout import Stack
+from viewforge.ui.links import RouteLinkButton
+from viewforge.routing import RouterView, route
 
 @route("/", "Home")
 def home_view(params, route):

@@ -1,4 +1,4 @@
-from viewforge.signal import Signal
+from viewforge.state.signal import Signal
 
 class Store:
     def __init__(self, state: dict):

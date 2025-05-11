@@ -1,6 +1,6 @@
 from typing import TypedDict, Literal, Any, Optional, Mapping, Unpack, Union
 
-from viewforge.signal import Signal
+from viewforge.state.signal import Signal
 
 
 class StylePropsDict(TypedDict, total=False):

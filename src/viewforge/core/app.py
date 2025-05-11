@@ -1,8 +1,8 @@
 import webview
-from viewforge.render import render_html
-from viewforge.registry import handler_registry
-from viewforge.router import register_decorated_routes, _route_registry, router
-from viewforge.ui.router_view import RouterView
+from viewforge.rendering.render import render_html
+from viewforge.core.registry import handler_registry
+from viewforge.routing.router import register_decorated_routes, _route_registry, router
+from viewforge.routing.router_view import RouterView
 
 
 class App:

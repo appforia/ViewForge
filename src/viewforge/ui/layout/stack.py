@@ -1,6 +1,6 @@
 from typing import List
-from viewforge.component import Component
-from viewforge.libtypes import StyleProps, Css
+from viewforge.core.component import Component
+from viewforge.core.libtypes import StyleProps, Css
 
 
 class Stack(Component):

@@ -1,6 +1,6 @@
-from viewforge.component import Component
-from viewforge.router import router
-from viewforge.registry import handler
+from viewforge.core.component import Component
+from viewforge.routing.router import router
+from viewforge.core.registry import handler
 from viewforge.utils.css import merge_styles
 
 class RouteLinkButton(Component):
