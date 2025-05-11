@@ -1,5 +1,7 @@
 # ViewForge
 
+> **⚠️ Note:** This project is currently under active development. APIs and features are subject to change.
+ 
 **ViewForge** is a modern Python desktop UI framework that renders HTML and web components inside a [pywebview](https://github.com/r0x0r/pywebview) window.
 
 It supports component-based rendering, declarative event registration, reactive state with signals, and flexible routing — all in Python.
