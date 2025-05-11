@@ -1,6 +1,5 @@
 import uuid
 from typing import Any, Optional
-from viewforge.app import App
 from viewforge.libtypes import Css
 from viewforge.signal import Signal
 from viewforge.utils.event_binding import js_event_expression
@@ -52,10 +51,14 @@ class Component:
     def event_attr(self, element_type: Optional[str] = None) -> str:
         if not self._event_handlers:
             return ""
-        return " " + " ".join(
-            f'on{event}="vf(\'{handler}\', {js_event_expression(event, element_type)})"'
-            for event, handler in self._event_handlers.items()
-        )
+        parts = []
+        for event, handler in self._event_handlers.items():
+            arg = js_event_expression(event, element_type)
+            if arg:
+                parts.append(f'on{event}="vf(\'{handler}\', {arg})"')
+            else:
+                parts.append(f'on{event}="vf(\'{handler}\')"')
+        return " " + " ".join(parts)
 
     def get_prop(self, key: str) -> Any:
         if key in self._signal_bindings:
@@ -66,6 +69,7 @@ class Component:
         raise NotImplementedError("Subclasses must implement render()")
 
     def update(self, _=None):
+        from viewforge.app import App  # ✅ lazy import to avoid circular reference
         html = self.render().replace("`", "\\`")
         js = f'document.getElementById("{self.id}").outerHTML = `{html}`'
         App.current().window.evaluate_js(js)

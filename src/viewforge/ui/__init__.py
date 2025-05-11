@@ -1,6 +1,5 @@
 from typing import List, Optional, Callable
 from viewforge.component import Component
-from viewforge.router import router
 
 
 class Form(Component):
@@ -28,22 +27,3 @@ class FormGroup(Component):
     def render(self):
         inner = "\n".join(child.render() for child in self.children)
         return f'<fieldset{self.style_attr()}>{inner}</fieldset>'
-
-
-class RouteLinkButton(Component):
-    def __init__(self, label: str, to: str, css=None):
-        self.label = label
-        self.to = to
-        self.handler_name = f"goto_{label.lower().replace(' ', '_')}"
-        super().__init__(css)
-
-    def _navigate(self):
-        if router():
-            router().navigate(self.to)
-            from viewforge.app import App
-            app = App.current()
-            if app:
-                app.reload()
-
-    def render(self):
-        return f'<button onclick="{self.handler_name}()"{self.style_attr()}>{self.label}</button>'

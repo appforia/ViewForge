@@ -1,13 +1,14 @@
 import re
 from urllib.parse import urlencode, urlparse, parse_qs
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Dict, List
 
 
 class Route:
-    def __init__(self, name: str, path: str, view: Callable[[dict], 'Component']):
+    def __init__(self, name: str, path: str, view: Callable[[dict, 'RouterSignal'], 'Component'], meta: dict = None):
         self.name = name
         self.path = path
         self.view = view
+        self.meta = meta or {}
         self._pattern, self._param_names = self._compile_path(path)
 
     def _compile_path(self, path: str) -> Tuple[re.Pattern, list]:
@@ -46,10 +47,12 @@ class Router:
         self.current_view: Optional[Callable] = None
         self.current_path: str = "/"
         self.current_params: dict = {}
+        self.current_route: Optional[Route] = None
 
-    def add_route(self, path: str, view: Callable[[dict], 'Component'], name: Optional[str] = None):
+    def add_route(self, path: str, view: Callable[[dict, 'RouterSignal'], 'Component'], name: Optional[str] = None,
+                  meta: dict = None):
         name = name or path.strip("/").split("/")[0] or "root"
-        route = Route(name, path, view)
+        route = Route(name, path, view, meta=meta)
         self.routes.append(route)
         self.named_routes[name] = route
 
@@ -64,19 +67,21 @@ class Router:
                 self.current_path = full_path
                 self.current_params = {**params, "query": query}
                 self.current_view = route.view
+                self.current_route = route
                 return
 
-        self.current_view = lambda params={}: NotFoundView()
+        self.current_view = lambda params, route: _not_found()
         self.current_params = {"query": query}
+        self.current_route = None
 
     def render(self):
-        if self.current_view:
-            return self.current_view(self.current_params).render()
-        return "<h1>404 Not Found</h1>"
+        if not self.current_view:
+            return "<h1>404 Not Found</h1>"
+        return self.current_view(self.current_params, RouterSignal(self)).render()
 
 
-def NotFoundView():
-    from viewforge.ui import Text
+def _not_found():
+    from viewforge.ui.text import Text
     return Text("404 - Page not found")
 
 
@@ -121,6 +126,47 @@ class RouterSignal:
     def query(self) -> dict:
         return self._router.current_params.get("query", {})
 
+    def meta(self, key: str, default=None):
+        if self._router.current_route:
+            return self._router.current_route.meta.get(key, default)
+        return default
+
+    def render(self) -> str:
+        return self._router.render()
+
+
+# Route decorator support
+_route_registry: List[Dict] = []
+
+
+def route(path: str, title: Optional[str] = None, *, name: Optional[str] = None):
+    def decorator(view_func: Callable[[dict, RouterSignal], 'Component']):
+        _route_registry.append({
+            "path": path,
+            "view": view_func,
+            "meta": {"title": title or ""},
+            "name": name,
+        })
+        return view_func
+
+    return decorator
+
+
+def register_decorated_routes(router: Optional[Router] = None) -> Router:
+    if router is None:
+        router = create_router()
+    for entry in _route_registry:
+        router.add_route(
+            path=entry["path"],
+            view=entry["view"],
+            name=entry["name"],
+            meta=entry["meta"]
+        )
+    return router
+
 
 def router() -> RouterSignal:
+    global _router_instance
+    if _router_instance is None:
+        _router_instance = register_decorated_routes()
     return RouterSignal(_router_instance)

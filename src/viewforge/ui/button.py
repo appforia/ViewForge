@@ -24,4 +24,5 @@ class Button(Component):
 
     def render(self) -> str:
         content = self.label() if isinstance(self.label, Signal) else self.label
-        return f'<button id="{self.id}"{self.event_attr()}{self.style_attr()}>{content}</button>'
+        return f'<button id="{self.id}"{self.event_attr(element_type="button")}{self.style_attr()}>{content}</button>'
+

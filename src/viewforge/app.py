@@ -1,6 +1,9 @@
 import webview
 from viewforge.render import render_html
 from viewforge.registry import handler_registry
+from viewforge.router import register_decorated_routes, _route_registry, router
+from viewforge.ui.router_view import RouterView
+
 
 class App:
     _instance = None
@@ -14,6 +17,11 @@ class App:
         self.api = API()
 
     def run(self, components=None, debug=False):
+        # Automatically register decorated routes
+        if _route_registry:
+            register_decorated_routes()
+            router().navigate("/")  # Ensure initial route
+
         if components:
             if callable(components):
                 print("[App] Building components...")
@@ -53,11 +61,3 @@ class API:
         if handler:
             return handler(*args)
         raise ValueError(f"No handler named '{name}'")
-
-
-class RouterView:
-    def __init__(self, router):
-        self.router = router
-
-    def render(self):
-        return self.router.render()
