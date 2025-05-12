@@ -10,7 +10,9 @@ from watchdog.events import FileSystemEventHandler
 from viewforge.core.app import App
 from viewforge.ui.elements.text import Text
 
-def load_app_entry(source):
+
+def load_app_entry(source: str):
+    """Dynamically load the entry module from a file path or module name."""
     if source.endswith(".py"):
         spec = importlib.util.spec_from_file_location("reloaded_module", source)
         module = importlib.util.module_from_spec(spec)
@@ -19,8 +21,9 @@ def load_app_entry(source):
         module = importlib.import_module(source)
     return module
 
+
 class ReloadHandler(FileSystemEventHandler):
-    def __init__(self, source):
+    def __init__(self, source: str):
         self.source = source
 
     def on_modified(self, event):
@@ -30,9 +33,9 @@ class ReloadHandler(FileSystemEventHandler):
                 module = load_app_entry(self.source)
                 app = App.current()
                 if app:
-                    print("✅  UI reloaded.")
                     app._components = module.build()
                     app.reload()
+                    print("✅  UI reloaded.")
             except Exception as e:
                 print("❌  Reload error:", e)
                 traceback.print_exc()
@@ -40,6 +43,7 @@ class ReloadHandler(FileSystemEventHandler):
                 if app:
                     app._components = [Text("Reload error. Check console.")]
                     app.reload()
+
 
 def run_reload():
     if len(sys.argv) >= 2:
@@ -57,14 +61,15 @@ def run_reload():
         module = load_app_entry(source)
         components = module.build()
     except Exception as e:
-        print(f"⚠️ Failed to load app: {e}")
+        print(f"⚠️  Failed to load app: {e}")
+        traceback.print_exc()
         components = [Text(f"Error loading {source}")]
 
     app = App()
 
     def start_watcher():
         observer = Observer()
-        print(f"[DEBUG] Watching directory: {Path.cwd()}")
+        print(f"👀  Watching for changes in: {Path.cwd()}")
         observer.schedule(ReloadHandler(source), path=str(Path.cwd()), recursive=True)
         observer.start()
         try:
@@ -75,4 +80,8 @@ def run_reload():
         observer.join()
 
     threading.Thread(target=start_watcher, daemon=True).start()
-    app.run(components, True)
+    app.run(components, debug=True)
+
+
+if __name__ == "__main__":
+    run_reload()

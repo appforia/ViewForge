@@ -5,7 +5,20 @@ from viewforge.state.signal import Signal
 from viewforge.utils.event_binding import js_event_expression
 
 
+def to_css(style: dict[str, Any]) -> str:
+    """Converts a dict of style properties into CSS inline style string."""
+    return "; ".join(f"{k.replace('_', '-')}: {v}" for k, v in style.items())
+
+
 class Component:
+    __slots__ = (
+        "_id",
+        "_style",
+        "_signal_bindings",
+        "_event_handlers",
+        "css",
+    )
+
     def __init__(self, css: Css = None, **props):
         self._id = f"vf-{uuid.uuid4().hex[:8]}"
         self._style = {}
@@ -16,16 +29,23 @@ class Component:
         for key, value in props.items():
             if key.startswith("on_"):
                 if isinstance(value, Signal):
-                    print(f"[Warning] Ignoring signal bound to event: {key}")
-                    continue
-                if callable(value) and not hasattr(value, "_handler_name"):
+                    raise ValueError(f"[Error] Signal cannot be used as an event handler: '{key}'")
+
+                if not callable(value):
+                    raise ValueError(f"[Error] Event handler for '{key}' must be a function, got: {type(value)}")
+
+                if not hasattr(value, "_handler_name"):
                     raise ValueError(
-                        f"[Error] Handler for '{key}' must be registered using @handler(). Lambdas are not allowed.")
-                if callable(value):
-                    handler_name = getattr(value, "_handler_name", None)
-                    if handler_name:
-                        dom_event = key[3:]  # 'on_click' → 'click'
-                        self._event_handlers[dom_event] = handler_name
+                        f"[Error] Handler for '{key}' must be registered using @handler(). "
+                        f"Lambdas or unregistered functions are not allowed.\n→ Received: {value}"
+                    )
+
+                handler_name = getattr(value, "_handler_name", None)
+                if not handler_name:
+                    raise ValueError(f"[Error] Failed to retrieve handler name for '{key}'")
+
+                dom_event = key[3:]  # 'on_click' → 'click'
+                self._event_handlers[dom_event] = handler_name
                 continue
 
             if isinstance(value, Signal):
@@ -39,16 +59,16 @@ class Component:
         return self._id
 
     def style_attr(self) -> str:
+        """Returns a string like: style="color: red; margin: 8px"."""
         style = self._style.copy()
         for key, sig in self._signal_bindings.items():
-            if key in self._style or key not in self.__dict__:
-                style[key] = sig()
+            style[key] = sig()
         if not style:
             return ""
-        css_str = "; ".join(f"{k.replace('_', '-')}: {v}" for k, v in style.items())
-        return f' style="{css_str}"'
+        return f' style="{to_css(style)}"'
 
     def event_attr(self, element_type: Optional[str] = None) -> str:
+        """Returns DOM event bindings like: oninput="vf('handler', this.value)"."""
         if not self._event_handlers:
             return ""
         parts = []
@@ -60,7 +80,12 @@ class Component:
                 parts.append(f'on{event}="vf(\'{handler}\')"')
         return " " + " ".join(parts)
 
+    def attributes(self, element_type: Optional[str] = None) -> str:
+        """Returns combined style and event attributes."""
+        return f'{self.style_attr()}{self.event_attr(element_type)}'
+
     def get_prop(self, key: str) -> Any:
+        """Returns a signal-bound value or fallback attribute."""
         if key in self._signal_bindings:
             return self._signal_bindings[key]()
         return getattr(self, key, None)
@@ -69,7 +94,13 @@ class Component:
         raise NotImplementedError("Subclasses must implement render()")
 
     def update(self, _=None):
-        from viewforge.core.app import App  # ✅ lazy import to avoid circular reference
-        html = self.render().replace("`", "\\`")
-        js = f'document.getElementById("{self.id}").outerHTML = `{html}`'
-        App.current().window.evaluate_js(js)
+        """Triggers re-rendering of this component via JS DOM patching."""
+        try:
+            from viewforge.core.app import App
+            app = App.current()
+            if app and app.window:
+                html = self.render()
+                js = f'vf_update("{self.id}", `{html}`)'  # ✅ patched
+                app.evaluate_js(js)
+        except Exception as e:
+            print(f"[Component.update] Failed to update {self.id}: {e}")

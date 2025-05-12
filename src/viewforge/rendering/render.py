@@ -1,54 +1,18 @@
-HTML_TEMPLATE = """<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>{title}</title>
-  <script>
-window.addEventListener("keydown", (e) => {{
-  if (e.ctrlKey && e.key === "r") {{
-    location.reload();
-  }}
-}});
+import os
 
-function vf(name, ...args) {{
-  if (window.pywebview?.api?.handle_event) {{
-    window.pywebview.api.handle_event(name, ...args);
-  }} else {{
-    console.warn("[vf] Handler not ready for:", name);
-    setTimeout(() => vf(name, ...args), 100);
-  }}
-}}
-
-window.viewforge = {{
-  readyQueue: [],
-  ready(fn) {{
-    if (window.pywebview?.api?.handle_event) {{
-      fn();
-    }} else {{
-      this.readyQueue.push(fn);
-      const check = () => {{
-        if (window.pywebview?.api?.handle_event) {{
-          while (this.readyQueue.length > 0) {{
-            this.readyQueue.shift()();
-          }}
-        }} else {{
-          setTimeout(check, 50);
-        }}
-      }};
-      check();
-    }}
-  }}
-}};
-  </script>
-</head>
-<body>
-  <div style="padding: 2rem; font-family: sans-serif;">
-    {content}
-  </div>
-</body>
-</html>"""
-
-
-def render_html(components, title="ViewForge"):
+def render_into_vite(components):
     rendered = "\n".join(c.render() for c in components)
-    return HTML_TEMPLATE.format(title=title, content=rendered)
+
+    dist_path = os.path.abspath("dist/index.html")
+    with open(dist_path, encoding="utf-8") as f:
+        html = f.read()
+
+    html = html.replace("<!--VIEWFORGE-CONTENT-->", rendered)
+
+    out_path = os.path.abspath("web/index.html")
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    return out_path

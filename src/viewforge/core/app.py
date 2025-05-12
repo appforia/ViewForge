@@ -1,53 +1,116 @@
+import os
 import webview
-from viewforge.rendering.render import render_html
+from importlib.resources import files
 from viewforge.core.registry import handler_registry
-from viewforge.routing.router import register_decorated_routes, _route_registry, router
+from viewforge.routing.router import register_decorated_routes, router
 from viewforge.routing.router_view import RouterView
+from viewforge.utils.tempdir import viewforge_runtime_dir
+from viewforge.utils.extract_static_assets import extract_static_assets
 
 
 class App:
     _instance = None
+    _default_template_path = str(files("viewforge.plugins.shoelace.sldist").joinpath("index.html"))
 
-    def __init__(self, router=None, title: str = "ViewForge App"):
+    def __init__(self, title: str = "ViewForge App"):
         self.window = None
         self.title = title
-        self.router = router
         self._components = None
         App._instance = self
         self.api = API()
 
     def run(self, components=None, debug=False):
-        # Automatically register decorated routes
-        if _route_registry:
+        runtime_dir = viewforge_runtime_dir()
+        output_html = os.path.join(runtime_dir, "index.html")
+        assets_dir = os.path.join(runtime_dir, "assets")
+
+        if components is None:
+            print("[App] Router mode enabled — using registered @route views.")
             register_decorated_routes()
-            router().navigate("/")  # Ensure initial route
+            router().navigate("/")
 
         if components:
             if callable(components):
                 print("[App] Building components...")
-                self._components = components()
+                result = components()
+                self._components = result if isinstance(result, list) else [result]
             else:
-                self._components = components
-            html = render_html(self._components, title=self.title)
+                self._components = components if isinstance(components, list) else [components]
 
-        elif self.router:
-            html = render_html([RouterView(self.router)], title=self.title)
+            extract_static_assets(assets_dir)
+
+            file_path = App.inject_into_template(
+                template_path=App._default_template_path,
+                out_path=output_html,
+                components=self._components,
+                placeholder="<!--VIEWFORGE-CONTENT-->"
+            )
+
         else:
-            html = "<h1>No components or router provided</h1>"
+            current_path = router()()
+            router().navigate(current_path or "/")
+            extract_static_assets(assets_dir)
+
+            file_path = App.inject_into_template(
+                template_path=App._default_template_path,
+                out_path=output_html,
+                components=[RouterView()],
+                placeholder="<!--VIEWFORGE-CONTENT-->"
+            )
 
         print("[App] Creating window")
         print("Registered handlers:", list(handler_registry.get().keys()))
-        self.window = webview.create_window(self.title, html=html, js_api=self.api)
+        self.window = webview.create_window(self.title, url=f"file://{file_path}", js_api=self.api)
         webview.start(debug=debug, http_server=True)
 
     def reload(self):
         if self.window:
-            if self.router:
-                html = render_html([RouterView(self.router)], title=self.title)
+            runtime_dir = viewforge_runtime_dir()
+            output_html = os.path.join(runtime_dir, "index.html")
+            assets_dir = os.path.join(runtime_dir, "assets")
+
+            if self._components:
+                components = self._components
+                if not isinstance(components, list):
+                    components = [components]
+                extract_static_assets(assets_dir)
+                file_path = App.inject_into_template(
+                    template_path=App._default_template_path,
+                    out_path=output_html,
+                    components=components,
+                    placeholder="<!--VIEWFORGE-CONTENT-->"
+                )
             else:
-                html = render_html(self._components, title=self.title)
-            script = f"document.documentElement.innerHTML = `{html}`"
-            self.window.evaluate_js(script)
+                current_path = router()()
+                router().navigate(current_path or "/")
+                extract_static_assets(assets_dir)
+                file_path = App.inject_into_template(
+                    template_path=App._default_template_path,
+                    out_path=output_html,
+                    components=[RouterView()],
+                    placeholder="<!--VIEWFORGE-CONTENT-->"
+                )
+
+            self.window.load_url(f"file://{file_path}")
+
+    def evaluate_js(self, js_code: str):
+        if self.window:
+            return self.window.evaluate_js(js_code)
+        return None
+
+    @staticmethod
+    def inject_into_template(template_path, out_path, components, placeholder="<!--VIEWFORGE-CONTENT-->"):
+        with open(template_path, "r", encoding="utf-8") as f:
+            html = f.read()
+
+        rendered = "\n".join(c.render() for c in components)
+        html = html.replace(placeholder, rendered)
+
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(html)
+
+        return os.path.abspath(out_path)
 
     @classmethod
     def current(cls):

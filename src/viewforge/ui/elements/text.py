@@ -8,16 +8,16 @@ from viewforge.ui.layout.presets import FONT_SIZE_PRESETS, FONT_WEIGHT_PRESETS
 
 class Text(Component):
     def __init__(
-            self,
-            content: ContentLike,
-            *,
-            tag: Tag = "div",
-            size: Optional[TextSize] = None,
-            weight: Optional[FontWeight] = None,
-            color: Optional[str] = None,
-            align: Optional[Align] = None,
-            css: Css = None,
-            **props: StyleProps
+        self,
+        content: ContentLike,
+        *,
+        tag: Tag = "div",
+        size: Optional[TextSize] = None,
+        weight: Optional[FontWeight] = None,
+        color: Optional[str] = None,
+        align: Optional[Align] = None,
+        css: Css = None,
+        **props: StyleProps
     ):
         if callable(content) and not isinstance(content, Signal):
             raise TypeError("Text content must be a string or Signal, not a function")
@@ -38,7 +38,7 @@ class Text(Component):
         if align:
             resolved_props["text_align"] = align
 
-        super().__init__(default_style={}, css=css, **resolved_props, **props)
+        super().__init__(css=css, **resolved_props, **props)
 
     def render(self):
         value = self._content() if isinstance(self._content, Signal) else self._content

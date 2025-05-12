@@ -11,7 +11,8 @@ class Route:
         self.meta = meta or {}
         self._pattern, self._param_names = self._compile_path(path)
 
-    def _compile_path(self, path: str) -> Tuple[re.Pattern, list]:
+    @staticmethod
+    def _compile_path(path: str) -> Tuple[re.Pattern, list]:
         parts = path.strip("/").split("/")
         pattern_parts = []
         param_names = []
@@ -42,19 +43,22 @@ class Route:
 
 class Router:
     def __init__(self):
-        self.routes: list[Route] = []
-        self.named_routes: dict[str, Route] = {}
+        self.routes: List[Route] = []
+        self.named_routes: Dict[str, Route] = {}
         self.current_view: Optional[Callable] = None
         self.current_path: str = "/"
         self.current_params: dict = {}
         self.current_route: Optional[Route] = None
 
-    def add_route(self, path: str, view: Callable[[dict, 'RouterSignal'], 'Component'], name: Optional[str] = None,
-                  meta: dict = None):
+    def add_route(self, path: str, view: Callable[[dict, 'RouterSignal'], 'Component'],
+                  name: Optional[str] = None, meta: dict = None):
         name = name or path.strip("/").split("/")[0] or "root"
         route = Route(name, path, view, meta=meta)
         self.routes.append(route)
         self.named_routes[name] = route
+
+    def has_route(self, name: str) -> bool:
+        return name in self.named_routes
 
     def navigate(self, full_path: str):
         url = urlparse(full_path)
@@ -70,9 +74,10 @@ class Router:
                 self.current_route = route
                 return
 
-        self.current_view = lambda params, route: _not_found()
+        self.current_path = full_path
+        self.current_view = NOT_FOUND_ROUTE.view
         self.current_params = {"query": query}
-        self.current_route = None
+        self.current_route = NOT_FOUND_ROUTE
 
     def render(self):
         if not self.current_view:
@@ -80,12 +85,19 @@ class Router:
         return self.current_view(self.current_params, RouterSignal(self)).render()
 
 
-def _not_found():
+def _not_found_view(params, route):
     from viewforge.ui.elements.text import Text
     return Text("404 - Page not found")
 
 
-# Global instance
+NOT_FOUND_ROUTE = Route(
+    name="not-found",
+    path="__404__",
+    view=_not_found_view,
+    meta={"title": "Not Found"}
+)
+
+# Global router singleton instance
 _router_instance: Optional[Router] = None
 
 
@@ -93,6 +105,10 @@ def create_router():
     global _router_instance
     _router_instance = Router()
     return _router_instance
+
+
+def current_route() -> Optional[Route]:
+    return _router_instance.current_route if _router_instance else None
 
 
 class RouterSignal:
