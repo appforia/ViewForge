@@ -2,7 +2,7 @@ import uuid
 from typing import Any, Optional
 from viewforge.core.libtypes import Css
 from viewforge.state.signal import Signal
-from viewforge.utils.event_binding import js_event_expression
+from viewforge.core.event_binding import js_event_expression
 
 
 def to_css(style: dict[str, Any]) -> str:

@@ -24,7 +24,9 @@ from .layout import (
     ShoelaceTabPanel,
     ShoelaceDivider,
     ShoelaceDrawer,
-    ShoelaceSplitPanel
+    ShoelaceSplitPanel,
+    Stack,
+    Box
 )
 
 from .feedback import (
@@ -44,7 +46,8 @@ from .navigation import (
     ShoelaceMenuItem,
     ShoelaceMenuLabel,
     ShoelaceTree,
-    ShoelaceTreeItem
+    ShoelaceTreeItem,
+    RouteLinkButton
 )
 
 from .display import (
@@ -82,6 +85,8 @@ from .structure import (
 )
 
 __all__ = [
+    # layout
+
     # inputs
     "ShoelaceInput", "ShoelaceTextarea", "ShoelaceSelect", "ShoelaceCheckbox",
     "ShoelaceRadio", "ShoelaceRadioGroup", "ShoelaceRange", "ShoelaceSwitch", "ShoelaceColorPicker",
@@ -91,7 +96,7 @@ __all__ = [
 
     # layout
     "ShoelaceCard", "ShoelaceTabGroup", "ShoelaceTab", "ShoelaceTabPanel",
-    "ShoelaceDivider", "ShoelaceDrawer", "ShoelaceSplitPanel",
+    "ShoelaceDivider", "ShoelaceDrawer", "ShoelaceSplitPanel", "Stack", "Box"
 
     # feedback
     "ShoelaceAlert", "ShoelaceProgressBar", "ShoelaceProgressRing", "ShoelaceTooltip",
@@ -99,7 +104,7 @@ __all__ = [
 
     # navigation
     "ShoelaceBreadcrumb", "ShoelaceBreadcrumbItem", "ShoelaceMenu", "ShoelaceMenuItem",
-    "ShoelaceMenuLabel", "ShoelaceTree", "ShoelaceTreeItem",
+    "ShoelaceMenuLabel", "ShoelaceTree", "ShoelaceTreeItem", "RouteLinkButton"
 
     # display
     "ShoelaceAvatar", "ShoelaceBadge", "ShoelaceTag", "ShoelaceDetails", "ShoelaceAnimation",

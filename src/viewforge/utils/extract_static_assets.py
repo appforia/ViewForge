@@ -14,7 +14,7 @@ def extract_static_assets(destination: Optional[str] = None) -> str:
         from viewforge.utils.tempdir import viewforge_runtime_dir
         destination = os.path.join(viewforge_runtime_dir(), "assets")
 
-    package = "viewforge.plugins.shoelace.sldist.assets"
+    package = "viewforge.static.assets"
     asset_folder = files(package)
     os.makedirs(destination, exist_ok=True)
 

@@ -86,7 +86,7 @@ class Router:
 
 
 def _not_found_view(params, route):
-    from viewforge.ui.elements.text import Text
+    from viewforge.components.text import Text
     return Text("404 - Page not found")
 
 

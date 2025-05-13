@@ -10,7 +10,7 @@ from viewforge.utils.extract_static_assets import extract_static_assets
 
 class App:
     _instance = None
-    _default_template_path = str(files("viewforge.plugins.shoelace.sldist").joinpath("index.html"))
+    _default_template_path = str(files("viewforge.static").joinpath("index.html"))
 
     def __init__(self, title: str = "ViewForge App"):
         self.window = None

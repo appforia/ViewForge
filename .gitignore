@@ -74,3 +74,4 @@ Thumbs.db
 ehthumbs.db
 /.pypirc
 publish.bat
+/shoelace-local/node_modules/

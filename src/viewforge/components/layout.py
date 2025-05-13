@@ -1,4 +1,9 @@
+from typing import List, Optional
+
+from viewforge.core import Component
 from viewforge.core.component import Component
+from viewforge.core.libtypes import Css, StyleProps
+
 
 class ShoelaceCard(Component):
     def __init__(self, children=None, **props):
@@ -113,3 +118,42 @@ class ShoelaceDrawer(Component):
     def render(self):
         self._props["label"] = self.label
         return f'<sl-drawer {" ".join(f"{k}={v!r}" for k, v in self._props.items())}></sl-drawer>'
+
+
+class Stack(Component):
+    def __init__(
+            self,
+            children: List[Component],
+            *,
+            css: Css = None,
+            **props: StyleProps
+    ):
+        self.children = children or []
+
+        default_style = {
+            "display": "flex",
+            "flex_direction": "column",
+            "gap": "1rem",
+        }
+
+        super().__init__(css=css, **default_style, **props)
+
+    def render(self):
+        child_html = "\n".join(child.render() for child in self.children)
+        return f'<div id="{self.id}"{self.event_attr()}{self.style_attr()}>{child_html}</div>'
+
+
+class Box(Component):
+    def __init__(
+            self,
+            children: Optional[List[Component]] = None,
+            *,
+            css: Css = None,
+            **props: StyleProps
+    ):
+        self.children = children or []
+        super().__init__(css=css, **props)
+
+    def render(self):
+        child_html = "\n".join(child.render() for child in self.children)
+        return f'<div id="{self.id}"{self.event_attr()}{self.style_attr()}>{child_html}</div>'

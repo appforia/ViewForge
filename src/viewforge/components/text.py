@@ -2,8 +2,7 @@ from typing import Optional
 from viewforge.state.signal import Signal
 from viewforge.core.component import Component
 from viewforge.core.libtypes import TextSize, FontWeight, StyleProps, Tag, Align, Css, ContentLike
-from viewforge.utils.css import resolve_preset
-from viewforge.ui.layout.presets import FONT_SIZE_PRESETS, FONT_WEIGHT_PRESETS
+from viewforge.utils.css import resolve_preset, FONT_SIZE_PRESETS, FONT_WEIGHT_PRESETS
 
 
 class Text(Component):

@@ -1,60 +1,39 @@
 from viewforge.core import App
-from viewforge.ui.elements import Text
-from viewforge.ui.layout import Stack
-from viewforge.ui.links import RouteLinkButton
-from viewforge.routing import RouterView, route
+from viewforge.core.registry import handler
+from viewforge.state.signal import Signal
+from viewforge.components.text import Text
+from viewforge.components.layout import Stack
+from viewforge.components.buttons import ShoelaceButton
 
-@route("/", "Home")
-def home_view(params, route):
-    return Text("\U0001F3E0 Welcome to the Home Page")
-
-
-@route("/about", "About")
-def about_view(params, route):
-    return Text("\u2139\ufe0f About this app")
+# Reactive state
+count = Signal(0)
 
 
-@route("/user/<id>", "User Profile")
-def user_profile_view(params, route):
-    user_id = params.get("id", "unknown")
-    return Text(f"\U0001F464 Viewing user: {user_id}")
+# Handlers (must be registered)
+@handler(name='increment')
+def increment():
+    count.set(count() + 1)
+    print(count())
 
 
-@route("/admin", "Admin Page")
-def admin_view(params, route):
-    return Stack([
-        Text(route.meta("title")),
-        RouteLinkButton(label="Admin Logs", to="/admin/logs")
-    ])
+@handler(name='decrement')
+def decrement():
+    count.set(count() - 1)
+    print(count())
 
 
-@route("/admin/logs", "Admin Logs")
-def admin_logs_view(params, route):
-    return Stack([
-        Text("\U0001F4DC Admin Logs")
-    ])
-
-
-@route("/search", "Search")
-def search_view(params, route):
-    term = route.query().get("term", "")
-    return Text(f"🔍 Search results for: {term or '[nothing]'}")
-
-
-# Layout
-
+# UI layout
 def build():
-    return [
+    return Stack([
+        Text("🔢 Shoelace Counter", css={"font_size": "1.5rem", "margin_bottom": "1rem"}),
+        Text(count),
         Stack([
-            RouteLinkButton(label="Home", to="/"),
-            RouteLinkButton(label="About", to="/about"),
-            RouteLinkButton(label="User 42", to="/user/42"),
-            RouteLinkButton(label="Admin", to="/admin"),
-            RouteLinkButton(label="Search for Apple", to="/search?term=apple"),
-            RouterView()
-        ], css={"gap": "1rem", "padding": "2rem"})
-    ]
+            ShoelaceButton("➕ Increment", on_click=increment),
+            ShoelaceButton("➖ Decrement", on_click=decrement)
+        ], css={"gap": "1rem"})
+    ], css={"padding": "2rem", "gap": "1rem"})
 
 
+# Run app
 if __name__ == "__main__":
-    App().run(build)
+    App().run(build, True)

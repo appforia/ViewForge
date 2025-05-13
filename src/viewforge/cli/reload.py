@@ -8,7 +8,7 @@ import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from viewforge.core.app import App
-from viewforge.ui.elements.text import Text
+from viewforge.components.text import Text
 
 
 def load_app_entry(source: str):

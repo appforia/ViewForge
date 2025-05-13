@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: './', // important for file:// protocol
+  base: './',
   build: {
-    outDir: './dist',
-    assetsDir: 'assets',
+    outDir: '../src/viewforge/static',
+    rollupOptions: {
+        input: 'index.html'
+    }
   }
 });
